@@ -1,23 +1,23 @@
 {
-  "name": "api-gateway-service",
+  "name": "core-api-router",
   "version": "1.0.0",
-  "description": "A lightweight and secure API routing layer built for high-performance edge environments.",
+  "description": "Lightweight edge API router responsible for handling and routing incoming API requests to backend services.",
   "private": true,
   "license": "MIT",
   "type": "module",
   "keywords": [
-    "api",
-    "gateway",
-    "edge",
-    "routing",
-    "backend",
-    "vercel"
+    "api-router",
+    "edge-computing",
+    "backend-gateway",
+    "vercel-edge",
+    "microservices",
+    "routing-layer"
   ],
-  "author": "Internal Service",
-  "main": "index.js",
+  "author": "Engineering Team",
   "scripts": {
     "dev": "vercel dev",
-    "deploy": "vercel deploy",
-    "build": "echo 'No build step required for Edge Runtime'"
+    "deploy:prod": "vercel deploy --prod",
+    "deploy:preview": "vercel deploy",
+    "lint": "eslint ."
   }
 }
