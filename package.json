@@ -1,7 +1,0 @@
-{
-  "name": "vercel-x",
-  "version": "1.0.0",
-  "description": "Edge-runtime for on Vercel",
-  "private": true,
-  "license": "MIT"
-}
