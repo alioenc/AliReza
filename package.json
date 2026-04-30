@@ -1,0 +1,8 @@
+{
+  "name": "vercel-http-forwarder",
+  "version": "1.0.0",
+  "description": "A lightweight HTTP forwarding service running on Vercel Edge Runtime",
+  "private": true,
+  "license": "MIT",
+  "type": "module"
+}
