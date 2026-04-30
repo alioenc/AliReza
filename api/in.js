@@ -1,9 +1,8 @@
 export const config = { runtime: "edge" };
 
-const API_BASE_URL = (process.env.API_BASE_URL || "").replace(/\/$/, "");
+const TARGET_BASE = (process.env.TARGET_DOMAIN || "").replace(/\/$/, "");
 
-// هدرهایی که برای امنیت و تمیزی پاسخ حذف می‌شوند
-const HEADERS_TO_REMOVE = new Set([
+const STRIP_HEADERS = new Set([
   "host",
   "connection",
   "keep-alive",
@@ -17,94 +16,47 @@ const HEADERS_TO_REMOVE = new Set([
   "x-forwarded-host",
   "x-forwarded-proto",
   "x-forwarded-port",
-  "x-vercel-id",
-  "x-vercel-deployment-id",
-  "x-vercel-trace",
 ]);
 
-/**
- * API Gateway Handler
- * 
- * این هندلر درخواست‌های دریافتی را به یک سرویس خارجی منتقل می‌کند
- * و پاسخ را مستقیماً به کاربر برمی‌گرداند.
- */
 export default async function handler(req) {
-  if (!API_BASE_URL) {
-    return new Response(
-      JSON.stringify({
-        error: "Server Misconfiguration",
-        message: "API endpoint is not properly configured.",
-      }),
-      { 
-        status: 500,
-        headers: { "Content-Type": "application/json" }
-      }
-    );
+  if (!TARGET_BASE) {
+    return new Response("Misconfigured: TARGET_DOMAIN is not set", { status: 500 });
   }
 
   try {
-    // استخراج مسیر درخواستی (مثلاً /users/123)
-    const url = new URL(req.url);
-    const targetPath = url.pathname + url.search;
+    const pathStart = req.url.indexOf("/", 8);
+    const targetUrl =
+      pathStart === -1 ? TARGET_BASE + "/" : TARGET_BASE + req.url.slice(pathStart);
 
-    // ساخت URL نهایی مقصد
-    const targetUrl = `${API_BASE_URL}${targetPath}`;
-
-    // ساخت هدرهای جدید
-    const headers = new Headers();
-
-    // کپی هدرهای مجاز از درخواست کاربر
-    for (const [key, value] of req.headers) {
-      const lowerKey = key.toLowerCase();
-
-      if (HEADERS_TO_REMOVE.has(lowerKey)) continue;
-      if (lowerKey.startsWith("x-vercel-")) continue;
-
-      // فقط هدرهای مجاز و استاندارد را نگه می‌داریم
-      headers.set(key, value);
+    const out = new Headers();
+    let clientIp = null;
+    for (const [k, v] of req.headers) {
+      if (STRIP_HEADERS.has(k)) continue;
+      if (k.startsWith("x-vercel-")) continue;
+      if (k === "x-real-ip") {
+        clientIp = v;
+        continue;
+      }
+      if (k === "x-forwarded-for") {
+        if (!clientIp) clientIp = v;
+        continue;
+      }
+      out.set(k, v);
     }
-
-    // افزودن اطلاعات مفید برای بک‌اند (بدون افشای اطلاعات حساس)
-    headers.set("x-request-id", crypto.randomUUID());
+    if (clientIp) out.set("x-forwarded-for", clientIp);
 
     const method = req.method;
-    const hasBody = !["GET", "HEAD", "OPTIONS"].includes(method);
+    const hasBody = method !== "GET" && method !== "HEAD";
 
-    // ارسال درخواست به سرویس اصلی
-    const response = await fetch(targetUrl, {
+    return await fetch(targetUrl, {
       method,
-      headers,
+      headers: out,
       body: hasBody ? req.body : undefined,
       duplex: "half",
       redirect: "manual",
     });
-
-    // ساخت پاسخ نهایی
-    const responseHeaders = new Headers(response.headers);
-
-    // حذف هدرهای حساس از پاسخ
-    for (const key of HEADERS_TO_REMOVE) {
-      responseHeaders.delete(key);
-    }
-
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders,
-    });
-
-  } catch (error) {
-    console.error("API request failed:", error);
-
-    return new Response(
-      JSON.stringify({
-        error: "Service Unavailable",
-        message: "Unable to process your request at this time.",
-      }),
-      { 
-        status: 503,
-        headers: { "Content-Type": "application/json" }
-      }
-    );
+  } catch (err) {
+    console.error("relay error:", err);
+    return new Response("Bad Gateway: Tunnel Failed", { status: 502 });
   }
 }
