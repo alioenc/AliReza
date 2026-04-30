@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "name": "simple-data-api",
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 10,
+      "memory": 1024
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/health",
+      "dest": "/api/index.js",
+      "methods": ["GET"]
+    },
+    {
+      "src": "/api/process",
+      "dest": "/api/index.js",
+      "methods": ["POST"]
+    },
+    {
+      "src": "/api/status",
+      "dest": "/api/index.js",
+      "methods": ["GET"]
+    }
+  ],
+  "trailingSlash": false,
+  "cleanUrls": true
+}
