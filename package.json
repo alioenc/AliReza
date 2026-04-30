@@ -1,8 +1,23 @@
 {
-  "name": "vercel-http-forwarder",
+  "name": "api-gateway-service",
   "version": "1.0.0",
-  "description": "A lightweight HTTP forwarding service running on Vercel Edge Runtime",
+  "description": "A lightweight and secure API routing layer built for high-performance edge environments.",
   "private": true,
   "license": "MIT",
-  "type": "module"
+  "type": "module",
+  "keywords": [
+    "api",
+    "gateway",
+    "edge",
+    "routing",
+    "backend",
+    "vercel"
+  ],
+  "author": "Internal Service",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel deploy",
+    "build": "echo 'No build step required for Edge Runtime'"
+  }
 }
