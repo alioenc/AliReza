@@ -1,23 +1,7 @@
 {
-  "name": "core-api-router",
+  "name": "vercel-x",
   "version": "1.0.0",
-  "description": "Lightweight edge API router responsible for handling and routing incoming API requests to backend services.",
+  "description": "Edge-runtime for on Vercel",
   "private": true,
-  "license": "MIT",
-  "type": "module",
-  "keywords": [
-    "api-router",
-    "edge-computing",
-    "backend-gateway",
-    "vercel-edge",
-    "microservices",
-    "routing-layer"
-  ],
-  "author": "Engineering Team",
-  "scripts": {
-    "dev": "vercel dev",
-    "deploy:prod": "vercel deploy --prod",
-    "deploy:preview": "vercel deploy",
-    "lint": "eslint ."
-  }
+  "license": "MIT"
 }
