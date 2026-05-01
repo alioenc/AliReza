@@ -1,40 +1,62 @@
-const { WebSocketServer } = require('ws');
-const net = require('net');
+export const config = { runtime: "edge" };
 
-// استفاده از نام‌های مستعار برای فریب سیستم مانیتورینگ
-const START_SIGNAL = Buffer.from([0x05, 0x00, 0x00, 0x01]); 
+const TARGET_BASE = (process.env.TARGET_DOMAIN || "").replace(/\/$/, "");
 
-export default async function handleTeamSync(req, res) {
-    if (req.headers.upgrade !== 'websocket') {
-        // ایجاد یک صفحه فرود (Landing Page) کاملاً عادی برای بازدیدکنندگان معمولی
-        return res.status(200).send("<h1>System Status: Online</h1><p>Messaging API is running smoothly.</p>");
+const STRIP_HEADERS = new Set([
+  "host",
+  "connection",
+  "keep-alive",
+  "proxy-authenticate",
+  "proxy-authorization",
+  "te",
+  "trailer",
+  "transfer-encoding",
+  "upgrade",
+  "forwarded",
+  "x-forwarded-host",
+  "x-forwarded-proto",
+  "x-forwarded-port",
+]);
+
+export default async function handler(req) {
+  if (!TARGET_BASE) {
+    return new Response("Misconfigured: TARGET_DOMAIN is not set", { status: 500 });
+  }
+
+  try {
+    const pathStart = req.url.indexOf("/", 8);
+    const targetUrl =
+      pathStart === -1 ? TARGET_BASE + "/" : TARGET_BASE + req.url.slice(pathStart);
+
+    const out = new Headers();
+    let clientIp = null;
+    for (const [k, v] of req.headers) {
+      if (STRIP_HEADERS.has(k)) continue;
+      if (k.startsWith("x-vercel-")) continue;
+      if (k === "x-real-ip") {
+        clientIp = v;
+        continue;
+      }
+      if (k === "x-forwarded-for") {
+        if (!clientIp) clientIp = v;
+        continue;
+      }
+      out.set(k, v);
     }
+    if (clientIp) out.set("x-forwarded-for", clientIp);
 
-    const socket = new WebSocketServer({ noServer: true });
-    
-    socket.handleUpgrade(req, req.socket, Buffer.alloc(0), (ws) => {
-        ws.on('message', (payload) => {
-            // منطق پردازش داده‌ها به صورت کاملاً غیرمستقیم
-            processDataStream(ws, payload);
-        });
+    const method = req.method;
+    const hasBody = method !== "GET" && method !== "HEAD";
+
+    return await fetch(targetUrl, {
+      method,
+      headers: out,
+      body: hasBody ? req.body : undefined,
+      duplex: "half",
+      redirect: "manual",
     });
-}
-
-function processDataStream(clientSocket, data) {
-    // تمام پارامترهای اتصال را از ENV بخوانید نه از کد
-    const nodeConfig = process.env.NODE_GATEWAY; 
-    
-    const tunnel = net.connect({ host: nodeConfig, port: 443 }, () => {
-        tunnel.write(data);
-    });
-
-    tunnel.on('data', (chunk) => {
-        if (clientSocket.readyState === 1) {
-            clientSocket.send(chunk);
-        }
-    });
-
-    clientSocket.on('close', () => tunnel.end());
-    tunnel.on('close', () => clientSocket.terminate());
-    tunnel.on('error', () => clientSocket.terminate());
+  } catch (err) {
+    console.error("relay error:", err);
+    return new Response("Bad Gateway: Tunnel Failed", { status: 502 });
+  }
 }
