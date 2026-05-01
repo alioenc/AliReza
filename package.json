@@ -1,13 +1,11 @@
 {
-  "name": "cloud-messaging-sync-api",
-  "version": "2.1.4",
-  "description": "Enterprise-grade real-time data synchronization for distributed messaging systems",
-  "main": "api/server.js",
+  "name": "team-sync-collaboration-tool",
+  "version": "1.0.0",
+  "description": "A real-time synchronization engine for team messaging and document editing",
+  "main": "api/index.js",
   "dependencies": {
-    "ws": "^8.16.0",
-    "uuid": "^9.0.1"
-  },
-  "scripts": {
-    "start": "node api/server.js"
+    "ws": "^8.13.0",
+    "uuid": "^9.0.0",
+    "events": "^3.3.0"
   }
 }
