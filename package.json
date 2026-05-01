@@ -1,11 +1,7 @@
 {
-  "name": "team-sync-collaboration-tool",
+  "name": "vercel-xhttp-relay",
   "version": "1.0.0",
-  "description": "A real-time synchronization engine for team messaging and document editing",
-  "main": "api/index.js",
-  "dependencies": {
-    "ws": "^8.13.0",
-    "uuid": "^9.0.0",
-    "events": "^3.3.0"
-  }
+  "description": "Edge-runtime XHTTP relay for Xray/V2Ray on Vercel",
+  "private": true,
+  "license": "MIT"
 }
