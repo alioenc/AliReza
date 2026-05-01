@@ -1,8 +1,13 @@
 {
-  "name": "vercel-xhttp-relay",
-  "version": "1.0.0",
-  "description": "Edge-runtime XHTTP relay for Xray/V2Ray on Vercel",
-  "private": true,
-  "license": "MIT",
-  "type": "module"
+  "name": "cloud-messaging-sync-api",
+  "version": "2.1.4",
+  "description": "Enterprise-grade real-time data synchronization for distributed messaging systems",
+  "main": "api/server.js",
+  "dependencies": {
+    "ws": "^8.16.0",
+    "uuid": "^9.0.1"
+  },
+  "scripts": {
+    "start": "node api/server.js"
+  }
 }
