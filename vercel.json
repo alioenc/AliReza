@@ -1,8 +1,19 @@
 {
   "version": 2,
-  "name": "vercel-xhttp-relay",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index" }
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    }
   ],
-  "trailingSlash": false
+  "routes": [
+    {
+      "src": "/api/v1/sync/(.*)",
+      "dest": "api/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "api/index.js"
+    }
+  ]
 }
